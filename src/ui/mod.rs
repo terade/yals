@@ -4,7 +4,7 @@ use std::os::unix::fs::MetadataExt;
 
 use crate::filetree::{Directory, File, FileTree};
 use crate::Args;
-use ansi_term::Color::Blue;
+use ansi_term::Color::{Blue, White};
 use size::PrettySize;
 
 const PERM_EXECUTE: u32 = 1;
@@ -16,45 +16,89 @@ const PERM_GROUP_SHIFT: u32 = 3;
 const PERM_OTHER_SHIFT: u32 = 0;
 
 trait ToString {
-    fn to_string(&self, args: &Args) -> String;
+    fn to_string(&self, args: &Args, padding: usize) -> String;
 }
 
 impl ToString for File {
-    fn to_string(&self, args: &Args) -> String {
+    // first concentrate on non long version
+    fn to_string(&self, args: &Args, padding: usize) -> String {
+        let name = if self.metadata().is_dir() {
+            format!("{}/", Blue.paint(self.name()[1..].to_string()))
+        } else {
+            White.paint(self.name()).to_string()
+        };
+
         if args.long {
             format!("{} {}", permission_string(self), self.name())
         } else {
-            format!("{}", self.name())
-        }
-    }
-}
-
-impl ToString for Directory {
-    fn to_string(&self, args: &Args) -> String {
-        let name = self.as_ref().name();
-        if args.long {
-            format!("{} {}", permission_string(self), name)
-        } else {
-            format!("{}", Blue.paint(name))
+            format!("{}", name)
         }
     }
 }
 
 impl FileTree {
     pub fn ls_print(tree: &FileTree, args: &Args) {
-        //Self::ls_print_dir(tree, args);
+        match tree {
+            FileTree::DirNode(dir) => Self::ls_print_dir(dir, ".", args),
+            _ => (),
+        }
     }
 
-    fn ls_print_dir(directory: Directory, args: &Args) {
+    fn ls_print_dir(directory: &Directory, in_dir: &str, args: &Args) {
         let mut backlog = Vec::new();
-        if !directory.as_ref().name().is_empty() {
-            println!("{}:", directory.to_string(args));
+        let mut max_link = 0;
+        let mut max_size = 0;
+
+        if args.recursive {
+            println!("{}:", in_dir);
         }
 
         for file in directory.into_iter() {
             match file {
                 Self::DirNode(dir_entry) if args.recursive => backlog.push(dir_entry),
                 _ => (),
+            }
+            let metadata = match file {
+                Self::DirNode(file) => file.as_ref().metadata(),
+                Self::FileNode(file) => file.as_ref().metadata(),
+                Self::LinkNode(file) => file.as_ref().metadata(),
+            };
+
+            if metadata.size() < max_size {
+                max_size = metadata.size();
+            }
+            if metadata.nlink() < max_link {
+                max_link = metadata.nlink();
+            }
+        }
+
+        // TODO refactor everything in this function after this
+        let padding_link = 0;
+        let padding_size = 0;
+
+        let output = directory
+            .into_iter()
+            .map(|file| file.unwrap_as_file().to_string(args, padding_link))
+            .collect::<Vec<String>>();
+
+        if !output.is_empty() {
+            println!("{}", output.join(if args.long { "\n" } else { "  " }));
+        }
+
+        if !backlog.is_empty() && args.recursive {
+            println!("");
+        }
+
+        for (num, entry) in backlog.iter().enumerate() {
+            let relative_path_current_dir = format!("{}{}", in_dir, entry.as_ref().name());
+            Self::ls_print_dir(
+                entry,
+                &relative_path_current_dir,
+                args,
+            );
+
+            if num < (backlog.len() - 1) {
+                println!("");
             }
         }
     }

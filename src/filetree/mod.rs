@@ -52,6 +52,13 @@ impl FileTree {
             _ => false,
         }
     }
+    pub fn unwrap_as_file(&self) -> &File {
+        match self {
+            Self::DirNode(file) => file.as_ref(),
+            Self::FileNode(file) => file.as_ref(),
+            Self::LinkNode(file) => file.as_ref(),
+        }
+    }
 }
 
 impl AsRef<File> for Directory {
@@ -200,7 +207,7 @@ pub mod walker {
 
             if file_type.is_dir() {
                 if args.recursive {
-                    dir.add_node(walk_dir(&file.path(), root, args)?);
+                    dir.add_node(walk_dir(&file.path(), current, args)?);
                 } else {
                     let new_dir = Directory::from(&file.path(), root)?;
                     dir.add_node(FileTree::DirNode(new_dir));

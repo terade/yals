@@ -110,7 +110,7 @@ mod test {
     use super::{PrettySize, Unit};
     #[test]
     fn test_size() {
-        let size = PrettySize::from_bytes(19762);
+        let size = PrettySize::from_bytes_with_style(19762, true);
 
         assert_eq!(size.convert(), Unit::KibiByte(20.0));
         assert_eq!(format!("{}", size), String::from("20K"));
