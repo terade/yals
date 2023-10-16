@@ -130,16 +130,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
 
 [[package]]
-name = "ls_rewrite"
-version = "0.1.0"
-dependencies = [
- "ansi_term",
- "anyhow",
- "clap",
- "users",
-]
-
-[[package]]
 name = "proc-macro2"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -283,3 +273,13 @@ name = "windows_x86_64_msvc"
 version = "0.48.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
+
+[[package]]
+name = "yals"
+version = "0.1.0"
+dependencies = [
+ "ansi_term",
+ "anyhow",
+ "clap",
+ "users",
+]

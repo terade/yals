@@ -31,7 +31,7 @@ impl ToString for File {
         if args.long {
             format!("{} {}", permission_string(self), self.name())
         } else {
-            format!("{}", name)
+            name.to_string()
         }
     }
 }
@@ -86,24 +86,18 @@ impl FileTree {
         }
 
         if !backlog.is_empty() && args.recursive {
-            println!("");
+            println!();
         }
 
         for (num, entry) in backlog.iter().enumerate() {
             let relative_path_current_dir = format!("{}{}", in_dir, entry.as_ref().name());
-            Self::ls_print_dir(
-                entry,
-                &relative_path_current_dir,
-                args,
-            );
+            Self::ls_print_dir(entry, &relative_path_current_dir, args);
 
             if num < (backlog.len() - 1) {
-                println!("");
+                println!();
             }
         }
     }
-
-    fn ls_print_directory(tree: &FileTree, args: &Args) {}
 }
 
 fn permission_string<T: AsRef<File>>(file: T) -> String {
@@ -126,16 +120,16 @@ fn permission_string<T: AsRef<File>>(file: T) -> String {
     } else {
         "-"
     };
-    res += &permission_string_by_group(mode, PERM_USER_SHIFT);
-    res += &permission_string_by_group(mode, PERM_GROUP_SHIFT);
-    res += &permission_string_by_group(mode, PERM_OTHER_SHIFT);
+    res += &get_permission_string_by_group(mode, PERM_USER_SHIFT);
+    res += &get_permission_string_by_group(mode, PERM_GROUP_SHIFT);
+    res += &get_permission_string_by_group(mode, PERM_OTHER_SHIFT);
 
     res = format!("{} {} {} {}", res, user_name, group_name, metadata.size());
 
     res
 }
 
-fn permission_string_by_group(mode: u32, shift: u32) -> String {
+fn get_permission_string_by_group(mode: u32, shift: u32) -> String {
     let mut res = String::new();
 
     res += if (mode & (PERM_READ << shift)) != 0 {

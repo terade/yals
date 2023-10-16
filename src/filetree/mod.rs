@@ -35,22 +35,13 @@ pub struct Directory {
 
 impl FileTree {
     pub fn is_dir(&self) -> bool {
-        match self {
-            Self::DirNode(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::DirNode(_))
     }
     pub fn is_file(&self) -> bool {
-        match self {
-            Self::FileNode(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::FileNode(_))
     }
     pub fn is_symlink(&self) -> bool {
-        match self {
-            Self::LinkNode(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::LinkNode(_))
     }
     pub fn unwrap_as_file(&self) -> &File {
         match self {
@@ -172,6 +163,17 @@ impl SymLink {
             target,
         }
     }
+
+    fn from(entry: DirEntry) -> anyhow::Result<Self> {
+        let Some(path) = entry.path().read_link()?.to_str() else {
+            return Err(anyhow!("could not resolve symlink"));
+        };
+
+        Ok(Self { 
+            file: File::from(entry)?,
+            target: String::from(path),
+        })
+    }
 }
 
 trait DisplayFileName {
@@ -181,7 +183,7 @@ trait DisplayFileName {
 pub mod walker {
     use crate::Args;
 
-    use super::{Directory, File, FileTree};
+    use super::{Directory, File, FileTree, SymLink};
     use std::path::PathBuf;
 
     pub fn get_tree(from: PathBuf, args: &Args) -> anyhow::Result<FileTree> {
@@ -215,6 +217,7 @@ pub mod walker {
             } else if file_type.is_file() {
                 dir.add_node(FileTree::FileNode(File::from(file)?));
             } else if file_type.is_symlink() {
+                dir.add_node(FileTree::LinkNode(SymLink::from(file)?))
             }
         }
 
