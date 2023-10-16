@@ -178,7 +178,7 @@ fn get_size_string(metadata: &Metadata, padding: usize, args: &Args) -> String {
 fn get_modified_string(metadata: &Metadata) -> String {
     match metadata.modified() {
         Ok(modified) => {
-            let dt: DateTime<Local> = modified.clone().into();
+            let dt: DateTime<Local> = modified.into();
             format!("{}", dt.format("%d. %b %R"))
         }
         Err(_err) => String::from("time not supported on this platform"),

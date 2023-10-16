@@ -24,16 +24,13 @@ fn sort_by_from(args: &Args) -> Box<dyn (FnMut(&FileTree, &FileTree) -> Ordering
 }
 
 fn prepare_name_for_compare(name: &str) -> String {
-    let name_position = name.chars().position(|c| match c {
-        'a'..='z' => true,
-        'A'..='Z' => true,
-        _ => false,
-    });
+    let name = name.to_lowercase();
+    let name_position = name.chars().position(|c| c.is_ascii_lowercase());
 
     if let Some(name_position) = name_position {
-        name[name_position..].to_string().to_lowercase()
+        name[name_position..].to_string()
     } else {
-        name.to_string().to_lowercase()
+        name.to_string()
     }
 }
 
