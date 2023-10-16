@@ -87,8 +87,12 @@ impl Display for PrettySize {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         let unit = self.convert();
 
+        if let Unit::Bytes(size) = unit {
+            return write!(f, "{}", size);
+        }
+
         let (size, unit_symbol) = match unit {
-            Unit::Bytes(size) => (size, "B"),
+            Unit::Bytes(size) => (size, ""),
             Unit::KibiByte(size) => (size, "K"),
             Unit::MegiByte(size) => (size, "M"),
             Unit::GibyByte(size) => (size, "G"),
@@ -97,16 +101,15 @@ impl Display for PrettySize {
 
         match self.1 {
             PrettyStyle::HumanReadable => {
-                write!(f, "{}{}", size, unit_symbol)
+                write!(f, "{:.1}{}", size, unit_symbol)
             }
-            PrettyStyle::NonHumanReadable => write!(f, "{}", size),
+            PrettyStyle::NonHumanReadable => write!(f, "{}", self.0),
         }
     }
 }
 
 #[cfg(test)]
 mod test {
-
     use super::{PrettySize, Unit};
     #[test]
     fn test_size() {

@@ -6,6 +6,8 @@ use std::{
     path::PathBuf,
 };
 
+const BLOCK_SIZE: u64 = 512;
+
 #[derive(Debug)]
 pub enum FileTree {
     DirNode(Directory),
@@ -101,11 +103,10 @@ impl File {
 
 impl Directory {
     fn new(name: String, metadata: Metadata) -> Self {
-        let total_size = metadata.size();
         Self {
             file: File::new(name, metadata),
             entries: Vec::new(),
-            total_size,
+            total_size: 0,
             count: 0,
         }
     }
@@ -123,13 +124,13 @@ impl Directory {
     }
 
     fn add_node(&mut self, node: FileTree) {
-        let (size_increase, count_increase) = match &node {
-            FileTree::FileNode(file) => (file.metadata.size(), 1),
-            FileTree::DirNode(dir) => (dir.as_ref().metadata.size(), dir.count),
-            _ => (0, 0),
+        let (blocks_increase, count_increase) = match &node {
+            FileTree::FileNode(file) => (file.metadata.blocks(), 1),
+            FileTree::DirNode(dir) => (dir.as_ref().metadata.blocks(), dir.count),
+            FileTree::LinkNode(link) => (link.as_ref().metadata.blocks(), 1),
         };
 
-        self.total_size += size_increase;
+        self.total_size += blocks_increase * BLOCK_SIZE;
         self.count += count_increase;
         self.entries.push(node);
     }
@@ -149,12 +150,11 @@ impl Directory {
         }
 
         let metadata = std::fs::metadata(current)?;
-        let total_size = metadata.size();
 
         Ok(Self {
             file: File::new(String::from(name), metadata),
             entries: Vec::new(),
-            total_size,
+            total_size: 0,
             count: 0,
         })
     }
