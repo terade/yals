@@ -23,7 +23,7 @@ impl ToString for File {
     // first concentrate on non long version
     fn to_string(&self, args: &Args, padding: usize) -> String {
         let name = if self.metadata().is_dir() {
-            format!("{}/", Blue.paint(self.name()[1..].to_string()))
+            format!("{}/", Blue.paint(self.name().to_string()))
         } else {
             White.paint(self.name()).to_string()
         };
@@ -90,7 +90,7 @@ impl FileTree {
         }
 
         for (num, entry) in backlog.iter().enumerate() {
-            let relative_path_current_dir = format!("{}{}", in_dir, entry.as_ref().name());
+            let relative_path_current_dir = format!("{}/{}", in_dir, entry.as_ref().name());
             Self::ls_print_dir(entry, &relative_path_current_dir, args);
 
             if num < (backlog.len() - 1) {

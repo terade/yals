@@ -118,6 +118,10 @@ impl Directory {
         self.total_size
     }
 
+    pub fn mut_entries(&mut self) -> &mut Vec<FileTree> {
+        &mut self.entries
+    }
+
     fn add_node(&mut self, node: FileTree) {
         let (size_increase, count_increase) = match &node {
             FileTree::FileNode(file) => (file.metadata.size(), 1),
@@ -136,9 +140,13 @@ impl Directory {
             .unwrap()
             .strip_prefix(root.to_str().unwrap());
 
-        let Some(name) = name else {
+        let Some(mut name) = name else {
             panic!("{:?} could not convert to string", current);
         };
+
+        if name.starts_with('/') {
+            name = &name[1..];
+        }
 
         let metadata = std::fs::metadata(current)?;
         let total_size = metadata.size();
@@ -165,11 +173,12 @@ impl SymLink {
     }
 
     fn from(entry: DirEntry) -> anyhow::Result<Self> {
-        let Some(path) = entry.path().read_link()?.to_str() else {
+        let binding = entry.path().read_link()?;
+        let Some(path) = binding.to_str() else {
             return Err(anyhow!("could not resolve symlink"));
         };
 
-        Ok(Self { 
+        Ok(Self {
             file: File::from(entry)?,
             target: String::from(path),
         })

@@ -1,5 +1,6 @@
 #[allow(dead_code, unused_imports)]
 mod filetree;
+pub mod processing;
 pub mod ui;
 
 use clap::Parser;
@@ -27,7 +28,11 @@ pub struct Args {
 fn main() -> anyhow::Result<()> {
     let current_dir = env::current_dir()?;
     let args = Args::parse();
-    let tree = filetree::walker::get_tree(current_dir, &args)?;
+    let mut tree = filetree::walker::get_tree(current_dir, &args)?;
+
+    if let Err(err) = tree.sort(&args) {
+        println!("{}", err);
+    }
 
     crate::filetree::FileTree::ls_print(&tree, &args);
 
