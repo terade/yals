@@ -186,23 +186,22 @@ fn get_modified_string(metadata: &Metadata) -> String {
 }
 
 fn get_permission_string_by_group(mode: u32, shift: u32) -> String {
-    let mut res = String::new();
-
-    res += if (mode & (PERM_READ << shift)) != 0 {
-        "r"
-    } else {
-        "-"
-    };
-    res += if (mode & (PERM_WRITE << shift)) != 0 {
-        "w"
-    } else {
-        "-"
-    };
-    res += if (mode & (PERM_EXECUTE << shift)) != 0 {
-        "x"
-    } else {
-        "-"
-    };
-
-    res
+    format!(
+        "{}{}{}",
+        if (mode & (PERM_READ << shift)) != 0 {
+            "r"
+        } else {
+            "-"
+        },
+        if (mode & (PERM_WRITE << shift)) != 0 {
+            "w"
+        } else {
+            "-"
+        },
+        if (mode & (PERM_EXECUTE << shift)) != 0 {
+            "x"
+        } else {
+            "-"
+        }
+    )
 }
