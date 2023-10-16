@@ -4,7 +4,7 @@ use anyhow::{anyhow, Result};
 use std::cmp::Ordering;
 
 impl FileTree {
-    pub fn sort(&mut self, args: &Args) -> Result<()> {
+    pub fn sort_by(&mut self, args: &Args) -> Result<()> {
         if let FileTree::DirNode(dir) = self {
             dir.sort_by(args);
             return Ok(());
@@ -16,8 +16,25 @@ impl FileTree {
 
 fn sort_by_from(args: &Args) -> Box<dyn (FnMut(&FileTree, &FileTree) -> Ordering)> {
     Box::new(|a: &FileTree, b: &FileTree| -> Ordering {
-        a.unwrap_as_file().name().cmp(b.unwrap_as_file().name())
+        let a_name = prepare_name_for_compare(a.unwrap_as_file().name());
+        let b_name = prepare_name_for_compare(b.unwrap_as_file().name());
+
+        a_name.cmp(&b_name)
     })
+}
+
+fn prepare_name_for_compare(name: &str) -> String {
+    let name_position = name.chars().position(|c| match c {
+        'a'..='z' => true,
+        'A'..='Z' => true,
+        _ => false,
+    });
+
+    if let Some(name_position) = name_position {
+        name[name_position..].to_string().to_lowercase()
+    } else {
+        name.to_string().to_lowercase()
+    }
 }
 
 impl Directory {

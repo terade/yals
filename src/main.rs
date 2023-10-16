@@ -30,7 +30,7 @@ fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let mut tree = filetree::walker::get_tree(current_dir, &args)?;
 
-    if let Err(err) = tree.sort(&args) {
+    if let Err(err) = tree.sort_by(&args) {
         println!("{}", err);
     }
 

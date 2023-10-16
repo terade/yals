@@ -185,10 +185,6 @@ impl SymLink {
     }
 }
 
-trait DisplayFileName {
-    fn display_file_name(&self) -> String;
-}
-
 pub mod walker {
     use crate::Args;
 
