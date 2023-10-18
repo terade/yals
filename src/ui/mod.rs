@@ -26,21 +26,23 @@ trait ToString {
 impl ToString for File {
     // first concentrate on non long version
     fn to_string(&self, args: &Args, padding_link: usize, padding_size: usize) -> String {
+        let mut res = String::new();
         let name = if self.metadata().is_dir() {
             format!("{}/", Blue.paint(self.name().to_string()))
         } else {
             White.paint(self.name()).to_string()
         };
+        if args.size {
+            res = format!("{} ", self.as_ref().metadata().blocks() * 512 / BLOCK_SIZE);
+        }
 
         if args.long {
-            format!(
-                "{} {}",
-                permission_string(self, args, padding_link, padding_size),
-                name
-            )
-        } else {
-            name.to_string()
+            res += &permission_string(self, args, padding_link, padding_size);
+            res += " ";
         }
+
+        res += &name;
+        res
     }
 }
 
