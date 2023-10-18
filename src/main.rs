@@ -23,6 +23,9 @@ pub struct Args {
     #[arg(long = "human-readable", short = 'H')]
     // may need to change that latter to conform to ls
     human_readable: bool,
+    /// list one file per line
+    #[arg(short = '1')]
+    one_file_per_line: bool,
 }
 
 fn main() -> anyhow::Result<()> {

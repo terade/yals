@@ -108,7 +108,7 @@ impl FileTree {
             .collect::<Vec<String>>();
 
         if !output.is_empty() {
-            println!("{}", output.join(if args.long { "\n" } else { "  " }));
+            println!("{}", output.join(if args.long || args.one_file_per_line { "\n" } else { "  " }));
         }
 
         if !backlog.is_empty() && args.recursive {
