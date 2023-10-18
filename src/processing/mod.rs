@@ -14,8 +14,15 @@ impl FileTree {
     }
 }
 
-fn sort_by_from(args: &Args) -> Box<dyn (FnMut(&FileTree, &FileTree) -> Ordering)> {
+fn sort_by_from(args: &Args) -> Box<dyn (FnMut(&FileTree, &FileTree) -> Ordering) + '_> {
     Box::new(|a: &FileTree, b: &FileTree| -> Ordering {
+        if args.sort_by_time {
+            return a.unwrap_as_file()
+                .metadata()
+                .created()
+                .unwrap()
+                .cmp(&b.unwrap_as_file().metadata().created().unwrap())
+        }
         let a_name = prepare_name_for_compare(a.unwrap_as_file().name());
         let b_name = prepare_name_for_compare(b.unwrap_as_file().name());
 

@@ -26,6 +26,9 @@ pub struct Args {
     /// list one file per line
     #[arg(short = '1')]
     one_file_per_line: bool,
+    /// sort by time
+    #[arg(short = 't')]
+    sort_by_time: bool,
 }
 
 fn main() -> anyhow::Result<()> {
